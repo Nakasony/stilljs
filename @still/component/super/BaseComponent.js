@@ -8,6 +8,16 @@ class SettingType {
     scripts = [];
 }
 
+class StEvent {
+    value;
+    onChange(callback){}
+    subscribers
+
+    constructor(value){
+        this.value = value;
+    }
+}
+
 class BaseComponent {
 
 
@@ -27,6 +37,10 @@ class BaseComponent {
      */
     new(params){}
 
+    onRender(){}
+
+    stOnUpdate(){}
+
     props(props = {}){
         this.cmpProps = props;
         return this;
@@ -36,10 +50,21 @@ class BaseComponent {
         return this.constructor.name;
     }
 
+    getInstanceName(){
+        return this.constructor.name.replace('C','');
+    }
+
+    getProperties(){
+
+        const fields = Object.getOwnPropertyNames(this);
+        const excludingFields = ['settings', 'componentName', 'template', 'cmpProps','htmlRefId','new'];
+        return fields.filter(field => !excludingFields.includes(field));
+
+    }
+    
     getBoundState(){
         
-        const fields = Object.getOwnPropertyNames(this);
-        const excludingFields = ['settings', 'componentName', 'template', 'cmpProps'];
+        const fields = this.getProperties();
         const currentClass = this;
         let tamplateWithState = this.template;
 
@@ -48,9 +73,7 @@ class BaseComponent {
          * referenced place
          */
         fields.forEach(field => {
-            if(!excludingFields.includes(field)){
-                tamplateWithState = tamplateWithState.replace(`@${field}`,currentClass[field]);
-            }
+            tamplateWithState = tamplateWithState.replace(`@${field}`,currentClass[field]);
         });
         return tamplateWithState;
     }
@@ -110,14 +133,11 @@ class BaseComponent {
 
     prepareRender(){
         
-        const fields = Object.getOwnPropertyNames(this);
-        const excludingFields = ['settings', 'componentName', 'template', 'cmpProps'];
+        const fields = this.getProperties();
         const currentClass = this;
 
         fields.forEach(field => {
-            if(!excludingFields.includes(field)){
-                this.template = this.template.replace(`@${field}`,currentClass[field]);
-            }
+            this.template = this.template.replace(`@${field}`,currentClass[field]);
         });
         
         Object.entries(this.cmpProps).forEach(([key, value]) => {
@@ -145,15 +165,11 @@ class BaseComponent {
             }
         });
         
-       }).then(() => {
+        }).then(() => {
 
-        //setTimeout(() => {
-            if(settings.scripts){
-                settings.scripts.forEach(this.importScript);
-            }
-        //});
+            if(settings.scripts) settings.scripts.forEach(this.importScript);
 
-       });
+        });
 
        $still.context.componentRegistror.export({...settings, instance: this });
     }
