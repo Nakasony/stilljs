@@ -9,19 +9,24 @@ const loadComponentFromPath = (path, className, callback = () => {}) => {
 
         try {
             eval(`${className}`);
-            resolve([])
+            resolve([]);
         } catch (error) {
             
             console.log(`Loading the component for the first time: `,className);
 
             const script = document.createElement('script');
             script.src = `${path}/${className}.js`;
-            document.head.appendChild(script);
+            script.id = new Date().getTime()+''+Math.random();
+            document.head.insertAdjacentElement('beforeend',script);
     
             const lazyLoadCompTimer = setInterval(() => {
                 try{
-                    resolve([]);
-                    clearInterval(lazyLoadCompTimer);
+                    script.addEventListener('load', () => {
+                        if(document.getElementById(script.id)){
+                            setTimeout(() => resolve([]));
+                            clearInterval(lazyLoadCompTimer);
+                        }
+                    });
                 }catch(err){
                     console.error(`Error on lazy loading component: ${className} `, err);
                 }
@@ -189,11 +194,20 @@ class Components {
         Object.assign(cmp, {
             new: (params) => {
 
+                /**  @type {ViewComponent} */
+                let instance;
                 if(params instanceof Object)
-                    return eval(`new ${cmpName}({...${JSON.stringify(params)}})`);
+                    instance = this.getNewParsedComponent(eval(`new ${cmpName}({...${JSON.stringify(params)}})`));
+                
 
                 if(params instanceof Array)
-                    return eval(`new ${cmpName}([...${JSON.stringify(params)}])`);
+                    instance = this.getNewParsedComponent(eval(`new ${cmpName}([...${JSON.stringify(params)}])`));
+                
+                instance.cmpInternalId = `dynamic-${instance.getUUID()}${cmpName}`;
+                /** TODO: Replace the bellow with the export under componentRegistror */
+                $still.context.componentRegistror.componentList[instance.cmpInternalId] = { instance };
+                
+                if(instance) return instance;
                 
                 return eval(`new ${cmpName}('${params}')`);
             }
@@ -215,6 +229,22 @@ class Components {
         });
         
         return window[componentName];
+
+    }
+    
+    /**  
+     * @param {ViewComponent} cmp 
+     * @returns {ViewComponent}
+     */
+    getNewParsedComponent(cmp){
+
+        this
+        .setComponentAndName(cmp, cmp.getName())
+        .defineNewInstanceMethod()
+        .parseGetsAndSets();
+
+        
+        return cmp;
 
     }
 
