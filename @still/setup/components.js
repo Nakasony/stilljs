@@ -85,7 +85,7 @@ class Components {
     componentName;
 
     getTopLevelCmpId(){
-        const { TOP_LEVEL_CMP } = $stillconst;
+        const { TOP_LEVEL_CMP, ANY_COMPONT_LOADED } = $stillconst;
         return `${TOP_LEVEL_CMP}`;
     }
 
