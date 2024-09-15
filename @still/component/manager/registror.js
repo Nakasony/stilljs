@@ -46,7 +46,8 @@ const $still = {
         expose: (cmp) => {
             return ComponentRegistror.get().expose(cmp)
         },
-        list: window
+        list: window,
+        get: (cmpName) => window[cmpName]
     },
     HTTPClient: new StillHTTPClient(),
 }
