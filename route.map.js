@@ -3,8 +3,13 @@
  */
 const routesMap = {
     viewRoutes: {
-        App: 'examples/home',
-    }
+        regular:{
+            Home: 'components/home',
+        },
+        lazyInitial: {
+            
+        }
+    },
 }
 
 
@@ -42,13 +47,11 @@ const routesMap = {
 
 
 
-
-
-
 let routeMapInverse = [];
-function getRouteMap(){
+function $stillGetRouteMap(){
 
     if(!routeMapInverse.length){
+        
         routeMapInverse = Object
             .entries(routesMap.viewRoutes)
             .reduce((accum, [cmp, path]) => {
@@ -58,7 +61,10 @@ function getRouteMap(){
     }
 
     return {
-        route: routesMap.viewRoutes,
+        route: {
+            ...routesMap.viewRoutes.regular, 
+            ...routesMap.viewRoutes.lazyInitial 
+        },
         inverse: routeMapInverse
     }
 }

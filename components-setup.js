@@ -1,16 +1,27 @@
 class ComponentSetup extends Components {
     
-    entryComponentPath = routesMap.viewRoutes.App;
-    entryComponentName = 'App';
+    static instance = null;
+
+    /**
+     * @returns { ComponentSetup }
+     */
+    static get(){
+        if(ComponentSetup.instance == null)
+            ComponentSetup.instance = new ComponentSetup();
+        return ComponentSetup.instance;
+    }
+
+    entryComponentPath = routesMap.viewRoutes.regular.Home;
+    entryComponentName = 'Home';
     
     constructor(){
         super();
     }
 
     init(){
-        return new App();
+        return new Home();
     }
 
 }
 
-(new ComponentSetup).loadComponent();
+ComponentSetup.get().loadComponent()
